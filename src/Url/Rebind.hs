@@ -3,6 +3,7 @@
   , UnboxedTuples
   , UnboxedSums
   , MagicHash
+  , PatternSynonyms
   , RebindableSyntax
   , ScopedTypeVariables
   , RecordWildCards
@@ -22,8 +23,8 @@ import Data.Bytes.Types (Bytes(..))
 import Data.Char (ord)
 import Data.Word (Word8)
 import GHC.Exts (Int(I#),Int#,(+#),(<#),(-#),orI#,(>=#),(==#),(>#))
-import GHC.Word (Word16(W16#))
 import Url.Unsafe (Url(..),ParseError(..))
+import GHC.Word.Compat (pattern W16#)
 import qualified Data.Bytes.Parser as P
 import qualified Data.Bytes.Parser.Latin as P (skipUntil, char2, decWord16)
 import qualified Data.Bytes.Parser.Unsafe as PU
@@ -55,8 +56,9 @@ parserAuthority urlSchemeEnd = do
   (# !urlHostEnd, !urlPort #) <- case colonSlashNeither of
     0# -> do
       urlHostEnd <- PU.cursor# -- ':' encountered first
-      (W16# urlPort) <- P.decWord16 InvalidPort
-      pure (# urlHostEnd -# 1#, Exts.word2Int# urlPort #)
+      w <- P.decWord16 InvalidPort
+      case w of
+        W16# urlPort -> pure (# urlHostEnd -# 1#, Exts.word2Int# urlPort #)
     1# -> do -- '/' encountered first
       urlHostEnd' <- PU.cursor#
       -- Backing up by one since we want to put the slash back

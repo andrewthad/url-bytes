@@ -6,6 +6,7 @@
   , MagicHash
   , ScopedTypeVariables
   , LambdaCase
+  , PatternSynonyms
   , RecordWildCards
   , NamedFieldPuns
   , ApplicativeDo
@@ -38,12 +39,13 @@ import Data.Bytes.Types (Bytes(..))
 import Data.List (intercalate)
 import Data.Word (Word16)
 import GHC.Exts (Int(I#),(==#),Int#,int2Word#)
-import GHC.Word (Word16(..))
+import GHC.Word.Compat (pattern W16#)
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (TExp(TExp))
 import Url.Rebind (decodeUrl)
 import Url.Unsafe (Url(..),ParseError(..))
 import qualified Data.Bytes as Bytes
+import qualified Data.Bytes.Text.Latin1 as Latin1
 
 -- | Slice into the 'Url' and retrieve the scheme, if it's present
 getScheme :: Url -> Maybe Bytes
@@ -132,12 +134,12 @@ unsafeSlice begin end (Bytes arr _ _) =
   Bytes arr begin (end - begin)
 
 literalUrl :: String -> Q (TExp Url)
-literalUrl ser = case decodeUrl $ Bytes.fromLatinString ser of
+literalUrl ser = case decodeUrl $ Latin1.fromString ser of
   Left e -> fail $ "Invalid url. Parse error: " <> show e
   Right Url{..} -> do
     pure $ TExp $
       ConE 'Url
-        `AppE` (ParensE $ (VarE 'Bytes.fromLatinString) `AppE` (LitE $ StringL ser))
+        `AppE` (ParensE $ (VarE 'Latin1.fromString) `AppE` (LitE $ StringL ser))
         `AppE` liftInt# urlSchemeEnd
         `AppE` liftInt# urlUsernameEnd
         `AppE` liftInt# urlHostStart
