@@ -10,6 +10,7 @@
   , NamedFieldPuns
   , ApplicativeDo
   , TemplateHaskell
+  , PatternSynonyms
 #-}
 
 -- | Note: this library parses, but does not validate urls
@@ -38,7 +39,7 @@ import Data.Bytes.Types (Bytes(..))
 import Data.List (intercalate)
 import Data.Word (Word16)
 import GHC.Exts (Int(I#),(==#),Int#,int2Word#)
-import GHC.Word (Word16(..))
+import GHC.Word.Compat (pattern W16#)
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (TExp(TExp))
 import Url.Rebind (decodeUrl)
